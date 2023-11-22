@@ -1,15 +1,11 @@
 ---
 title: "PS5"
-output:
-html_document:
-  df_print: paged
+df_print: paged
 ---
 
 # Q1.1
 
 ## Q1.1.1
-
-Looks good!
 
 ```{r}
 library(tidyverse)
@@ -51,9 +47,8 @@ flights %>%
 
 ```
 
-
-
 ## Q1.1.4
+
 The max delay is 1272min and the min delay is -86(assuming arriving early).\
 I heard about the delay that over a day therefore these delay data is plausible.
 
@@ -128,7 +123,6 @@ flights %>%
 
 ## Q1.2.2
 
-
 ```{r}
 flights %>% 
   filter(dest == "ORD") %>% 
@@ -139,7 +133,7 @@ flights %>%
 
 ## Q1.2.3
 
-I checked the Google flights and the flights are usually in between 2h30m to 2h50m \ The shortest flight time is 87m, which is 1h 27min\
+I checked the Google flights and the flights are usually in between 2h30m to 2h50m  The shortest flight time is 87m, which is 1h 27min\
 Can be short however not impossible.
 
 ## Q1.2.4
@@ -414,8 +408,3 @@ gapmider %>%
 
 
 ```
-
-## Final comments
-
-Takes 6hours to finish this PS Wish it was given more time :)
-
