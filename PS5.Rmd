@@ -1,0 +1,421 @@
+---
+title: "PS5"
+output:
+html_document:
+  df_print: paged
+---
+
+# Q1.1
+
+## Q1.1.1
+
+Looks good!
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(dplyr)
+
+
+head(flights,5)
+
+```
+
+## Q1.1.2
+
+(a) There is no code more than three character\
+(b) Also there is no code that contains digits
+
+```{r}
+ #(a)
+flights %>% 
+  filter(nchar(dest) !=3)
+  
+
+#(b)
+flights %>% 
+  filter(grepl(c(0.9), dest)) #I googled this function 
+
+```
+
+## Q1.1.3
+
+The total values are 336,776 and missing arr_delay values are 9430\
+Compare to the total values, looks fine
+
+```{r}
+
+flights %>% 
+  filter(is.na(arr_delay)) %>% 
+  summarise(n())
+
+```
+
+
+
+## Q1.1.4
+The max delay is 1272min and the min delay is -86(assuming arriving early).\
+I heard about the delay that over a day therefore these delay data is plausible.
+
+```{r}
+
+max(flights$arr_delay, na.rm = TRUE)
+min(flights$arr_delay, na.rm = TRUE)
+
+```
+
+## Q1.1.5
+
+```{r}
+flights %>% 
+  group_by(dest) %>% 
+  summarise(mean = mean(arr_delay, na.rm = TRUE)) %>% 
+  arrange(desc(mean)) %>% 
+  head(3)
+```
+
+## Q1.1.6
+
+```{r}
+flights %>% 
+  group_by(month) %>% 
+  summarise(mean = mean(arr_delay, na.rm = TRUE))
+```
+
+## Q1.1.7
+
+From July and Aug, the average of delay is peaked\
+September's average of delay is negative and increased after till December.
+
+```{r}
+flights %>% 
+  group_by(month) %>% 
+  summarise(mean = mean(arr_delay, na.rm = TRUE)) %>% 
+  ggplot(aes(month, mean, fill = factor(month)))+
+  geom_col()
+```
+
+## Q1.1.8
+
+Overall, it is align with the bar graph comparing month and mean of the delay.
+
+Delay is more common during summer\
+Fall looks like having less delay
+
+```{r}
+library(lubridate)
+
+flights %>% 
+  filter(year == 2013) %>% 
+  mutate(year_month_date= make_date(year = year, month = month, day = day)) %>% 
+  group_by(year_month_date) %>% 
+  summarise(mean_delay = mean(arr_delay, na.rm = TRUE)) %>% 
+  ggplot(aes(year_month_date, mean_delay))+
+  geom_point() +
+  labs(title = "Average Arrival Delay by Date in 2013", x = "Date", y = "Average Delay")
+
+```
+
+# Q1.2
+
+## Q1.2.1
+
+```{r}
+flights %>% 
+  filter(dest == "ORD") %>% 
+  nrow()
+```
+
+## Q1.2.2
+
+
+```{r}
+flights %>% 
+  filter(dest == "ORD") %>% 
+  arrange(air_time) %>%
+  summarize(year, month, day, dep_time,air_time,carrier,origin) %>% 
+  head(1)
+```
+
+## Q1.2.3
+
+I checked the Google flights and the flights are usually in between 2h30m to 2h50m \ The shortest flight time is 87m, which is 1h 27min\
+Can be short however not impossible.
+
+## Q1.2.4
+
+The longest time is 198min, which is similar to the one I searched
+
+```{r}
+flights %>% 
+  filter(dest == "ORD") %>% 
+  arrange(desc(air_time)) %>%
+  select(year, month, day, dep_time,air_time,carrier,origin) %>% 
+  head(1)
+```
+
+## Q1.2.5
+
+```{r}
+
+flights %>%
+  filter(dest == "ORD", !is.na(air_time), !is.na(distance)) %>% 
+  mutate(mph = distance/(air_time/60)) %>%
+  arrange(mph) %>%
+  slice(c(1:3, (n()-2):n())) %>% ##I googled this trick
+  select(year, month, day, air_time,carrier,dep_delay, mph)
+
+```
+
+## Q1.2.6
+
+Initially, I experimented with line and box plots. However, a line plot was unsuitable as the data points do not have a sequential or connected nature. As for the box plot, it resulted in a single aggregated box which was ineffective for discerning any distinct patterns within the data.
+
+Consequently, I opted for a scatter plot and also focused on mph(y-axis) from -20 to 300. This visualization effectively displays the overall data excluding outliers, allowing for the detection of any patterns or trends.
+
+I am seeing that deperture delay is highly accumulated between 300 to 450 min\
+Also flight speed increase along with departure delay till 400 min and started to decrease after
+
+```{r}
+flights_mutate <- flights
+
+flights_mutate %>%
+  mutate(mph = distance/(air_time/60)) %>%
+  filter(dest == "ORD", !is.na(mph), !is.na(dep_delay)) %>% 
+  ggplot(aes(mph,dep_delay,)) +
+  geom_point(alpha = 0.1) +
+  labs(title = "Departure Delay vs. Flight Speed for Flights to Chicago (All data)",
+       x = "Departure Delay (minutes)",
+       y = "Flight Speed (mph)")
+
+flights_mutate %>%
+  mutate(mph = distance/(air_time/60)) %>%
+  filter(dest == "ORD", !is.na(mph), !is.na(dep_delay)) %>% 
+  ggplot(aes(mph,dep_delay,)) +
+  geom_point(alpha = 0.1) +
+  coord_cartesian(ylim = c(-20, 300)) +
+  labs(title = "Departure Delay vs. Flight Speed for Flights to Chicago (ex. outliers)",
+       x = "Departure Delay (minutes)",
+       y = "Flight Speed (mph)")
+
+```
+
+# Q2.1
+
+## Q2.1.1
+
+```{r}
+gapmider <- read_delim("../gapminder.csv.bz2")
+dim(gapmider)
+```
+
+## Q2.1.2
+
+There are some NA values for certain columns however for the ones we are going to use are ok
+
+```{r}
+head(gapmider,5)
+tail(gapmider,5)
+```
+
+## Q2.1.3
+
+ISO3 : 253\
+ISO2 : 249\
+name : 250
+
+```{r}
+
+iso3_n <- gapmider %>% 
+  distinct(iso3) %>% 
+  nrow()
+
+iso2_n <- gapmider %>% 
+  distinct(iso2) %>% 
+  nrow()
+
+name_n <- gapmider %>% 
+  distinct(name) %>% 
+  nrow()
+
+```
+
+## Q2.1.4
+
+```{r}
+#(a)
+
+gapmider %>%
+  group_by(iso2) %>%
+  summarise(names = toString(unique(name)), count = n_distinct(name)) %>% 
+  filter(count>1) %>% 
+  select(names)
+
+
+#(b)
+  
+gapmider %>%
+  group_by(name) %>%
+  summarise(iso3s = toString(unique(iso3)), count = n_distinct(iso3)) %>% 
+  filter(count>1) %>% 
+  select(iso3s)
+
+```
+
+# Q2.2
+
+## Q2.2.1
+
+It has been increasing over time
+
+```{r}
+
+gapmider %>%
+  filter(iso3 %in% c('CHN', 'USA', 'IND', 'KOR'), !is.na(co2)) %>% 
+  ggplot(aes(time, co2, fill=iso3)) +
+  geom_col() +
+    labs(
+       x = "Year",
+       y = "CO2 emissions (kt)",
+       fill = "Country",
+       title = "Total Co2 kt based on year")
+
+```
+
+## Q2.2.2
+
+CO2 per capita was keep increasing till 1970-1080, decreased slightly after, and then increasing till recent.
+
+```{r}
+gapmider %>%
+  filter(iso3 %in% c('CHN', 'USA', 'IND', 'KOR'), !is.na(co2_PC) ) %>% 
+  ggplot(aes(time, co2_PC, fill = iso3)) +
+  geom_col() +
+  labs(
+       x = "Year",
+       y = "CO2 emissions (metric tons per capita)",
+       fill = "Country",
+       title = "Total Co2 metric tons per capita based on year")
+
+```
+
+## Q2.2.3
+
+Only showing the 1960 and 2016 since the result dataset is long, only showing the relevant data for next question Q2.2.4
+
+```{r}
+gapmider %>% 
+  group_by(region, time) %>% 
+  filter(time %in% c(1960, 2016), !is.na(co2_PC), !is.na(region)) %>% 
+  summarise(mean = mean(co2_PC))
+```
+
+## Q2.2.4
+
+```{r}
+gapmider %>%
+  filter(time %in% c(1960, 2016), !is.na(co2_PC), !is.na(region)) %>% 
+  group_by(region, time) %>% 
+  summarise(mean = mean(co2_PC), .groups = 'drop') %>%
+  ggplot(aes(region, mean, fill = factor(time))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+       x = "Geographic region",
+       y = "Mean of Co2 emissions(kt)",
+       color = "Year",
+       title = "Mean of Co2 emissions based on region 1960 vs 2016")
+```
+
+# Q2.3
+
+## Q2.3.1
+
+Generally, Europe exhibits very low fertility and high life expectancy, while Africa is at the opposite end. America and Asia are somewhat scattered in the mid-range; however, some populous Asian countries show high fertility and low life expectancy.
+
+```{r}
+gapmider %>% 
+  filter(time == 1960,!is.na(fertilityRate), !is.na(lifeExpectancy), !is.na(region), !is.na(totalPopulation)) %>% 
+  ggplot(aes(fertilityRate,lifeExpectancy, size = totalPopulation, color = factor(region)))+
+  geom_point(alpha = 0.6) +
+  labs(
+       x = "total fertility rate (births per woman)",
+       y = "Life expectancy at birth, total (years)",
+       color = "Continent",
+       title = "Fertility Rate vs Life Expectancy based on Continent in 1960")
+```
+
+## Q2.3.2
+
+```{r}
+gapmider %>% 
+  filter(time == 2019,!is.na(fertilityRate), !is.na(lifeExpectancy), !is.na(region), !is.na(totalPopulation)) %>% 
+  ggplot(aes(fertilityRate,lifeExpectancy, size = totalPopulation, color = factor(region)))+
+  geom_point(alpha = 0.6) +
+  labs(
+       x = "total fertility rate (births per woman)",
+       y = "Life expectancy at birth, total (years)",
+       color = "Continent",
+       title = "Fertility Rate vs Life Expectancy based on Continent in 2019")
+```
+
+## Q2.3.3
+
+Globally, fertility rates have decreased while life expectancy has increased. Particularly, the Americas and Asia are characterized by low fertility and high life expectancy. However, Europe and Africa remain on opposite ends of this spectrum.
+
+## Q2.3.4
+
+The previous scatterplot, encompassing all countries, makes direct comparisons challenging. However, the spread of data points aligns well with the overall mean values.
+
+```{r}
+gapmider %>% 
+  filter(time %in% c(1960, 2019), !is.na(lifeExpectancy), !is.na(region)) %>%
+  group_by(region, time) %>% 
+  summarise(mean=mean(lifeExpectancy))
+```
+
+## Q2.3.5
+
+```{r}
+gapmider %>% 
+  filter(time %in% c(1960, 2019), !is.na(lifeExpectancy), !is.na(region)) %>%
+  group_by(region, time) %>% 
+  summarise(mean=mean(lifeExpectancy)) %>% 
+  ungroup() %>% 
+  mutate(growth = mean-lag(mean)) %>% 
+  filter(time == 2019)
+  
+```
+
+## Q2.3.6
+
+```{r}
+gapmider %>% 
+  filter(iso3 %in% c("USA", "CHN", "SWE", "KOR"), !is.na(fertilityRate)) %>%
+  group_by(name) %>% 
+  ggplot(aes(fertilityRate,lifeExpectancy, color = factor(name))) +
+  geom_point(alpha= 0.5) +
+  geom_path() +
+  labs(
+       x = "Total fertilityRate",
+       y = "life Expectancy at Birth",
+       color = "Country")
+```
+
+## Q2.3.7
+
+```{r}
+
+gapmider %>% 
+  filter(time %in% c(1960, 2019), !is.na(lifeExpectancy), !is.na(name)) %>% 
+  group_by(time) %>% 
+  mutate(rank = rank(desc(lifeExpectancy))) %>% 
+  filter(name == "United States of America") %>% 
+  select(time, name, lifeExpectancy, rank)
+
+
+```
+
+## Final comments
+
+Takes 6hours to finish this PS Wish it was given more time :)
+
